@@ -1,0 +1,1 @@
+insert into user (id, name, lastname, email, username) values(1,'Nassim','Habbash', 'n.habbash@campus.unimib.it', 'dodicin');
