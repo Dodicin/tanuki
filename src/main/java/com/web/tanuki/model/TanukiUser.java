@@ -38,8 +38,9 @@ public class TanukiUser extends Auditable {
         this.email = email;
         this.username = username;
 
-        this.followers = new HashSet<TanukiUser>();
-        this.following = new HashSet<TanukiUser>();
+        this.followers = new HashSet<>();
+        this.following = new HashSet<>();
+        this.posts = new HashSet<>();
     }
 
     public TanukiUser() {
@@ -82,7 +83,6 @@ public class TanukiUser extends Auditable {
         this.username = username;
     }
 
-
     public Set<TanukiUser> getFollowers() {
         return followers;
     }
@@ -115,14 +115,17 @@ public class TanukiUser extends Auditable {
         }
     }
 
-    @Override
-    public String toString() {
-        return "TanukiUser{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", lastname='" + lastname + '\'' +
-                ", email='" + email + '\'' +
-                ", username='" + username + '\'' +
-                '}';
+    public Set<Post> getPosts() {
+        return posts;
+    }
+
+    public void addPost(Post post) {
+        this.posts.add(post);
+        post.setUser(this);
+    }
+
+    public void removePost(Post post) {
+        this.posts.remove(post);
+        post.setUser(null);
     }
 }

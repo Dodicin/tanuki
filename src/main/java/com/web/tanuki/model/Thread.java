@@ -1,5 +1,6 @@
 package com.web.tanuki.model;
 import javax.persistence.*;
+import java.util.LinkedList;
 import java.util.List;
 
 @Entity
@@ -12,20 +13,22 @@ public class Thread extends Auditable {
     private boolean archived;
     private String title;
 
-    @OneToMany(mappedBy="thread")
+    @OneToMany(mappedBy="thread", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Post> posts;
 
     @ManyToOne
     @JoinColumn(name="board_id", nullable=false)
     private Board board;
 
-    public Thread(boolean archived, String title, Board board) {
+    public Thread(boolean archived, String title) {
         this.archived = archived;
-        this.board = board;
         this.title = title;
+        this.posts = new LinkedList<>();
     }
 
-    public Thread() {}
+    public Thread() {
+        posts = new LinkedList<>();
+    }
 
 
     public Long getId() {
@@ -52,8 +55,14 @@ public class Thread extends Auditable {
         return posts;
     }
 
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
+    public void addPost(Post post) {
+        this.posts.add(post);
+        post.setThread(this);
+    }
+
+    public void removePost(Post post){
+        this.posts.remove(post);
+        post.setThread(null);
     }
 
     public Board getBoard() {

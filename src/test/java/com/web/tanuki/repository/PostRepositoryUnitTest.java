@@ -54,18 +54,24 @@ public class PostRepositoryUnitTest {
         board = new Board("cooking");
         boardRepository.save(board);
 
-        thread = new Thread(false, "new recipe", board);
+        thread = new Thread(false, "new recipe");
+        thread.setBoard(board);
         threadRepository.save(thread);
 
         Date yesterdayTime = new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000L);
         Calendar yesterdayDate = Calendar.getInstance();
         yesterdayDate.add(Calendar.DATE, -1);
         posts = new LinkedList<>();
-        posts.add(new Post("opening post", yesterdayDate, yesterdayTime, users.get(0), thread));
+        posts.add(new Post("opening post", yesterdayDate, yesterdayTime));
+        posts.get(0).setUser(users.get(0));
+        posts.get(0).setThread(thread);
 
         Date now = new Date();
         Calendar today = Calendar.getInstance();
-        posts.add(new Post("nice recipe", today, now, users.get(1), thread));
+        posts.add(new Post("nice recipe", today, now));
+        posts.get(1).setUser(users.get(1));
+        posts.get(1).setThread(thread);
+
 
         postRepository.saveAll(posts);
     }
@@ -113,6 +119,21 @@ public class PostRepositoryUnitTest {
             d.clear(Calendar.MILLISECOND);
             assertEquals(0, today.compareTo(d));
         }
+
+    }
+
+    @Test
+    void addAnswers(){
+        Post opening = posts.get(0);
+        Post answer = new Post("answer: nice recipe", new GregorianCalendar(), new Date());
+        answer.addAnswersTo(opening);
+        postRepository.save(answer);
+
+        Set<Post> referencedPosts = answer.getAnswersTo();
+        assertTrue(referencedPosts.contains(opening));
+
+        Set<Post> referencingPosts = opening.getAnsweredBy();
+        assertTrue(referencingPosts.contains(answer));
 
     }
 

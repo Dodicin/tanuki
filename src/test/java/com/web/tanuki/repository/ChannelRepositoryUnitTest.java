@@ -1,6 +1,8 @@
 package com.web.tanuki.repository;
 
+import com.web.tanuki.model.Audio;
 import com.web.tanuki.model.Channel;
+import com.web.tanuki.model.Content;
 import com.web.tanuki.model.TanukiUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +31,9 @@ public class ChannelRepositoryUnitTest {
     @Autowired
     private TanukiUserRepository userRepository;
 
+    @Autowired
+    private ContentRepository contentRepository;
+
     private List<TanukiUser> users;
     private Channel channel;
 
@@ -39,8 +45,8 @@ public class ChannelRepositoryUnitTest {
         users.add(new TanukiUser("name", "lastanem", "mail", "username"));
         users.add(new TanukiUser("name", "lastanem", "mail", "username"));
 
-        channel = new Channel("channel name", "channel desc", users.get(1));
-
+        channel = new Channel("channel name", "channel desc");
+        channel.setUser(users.get(0));
         userRepository.saveAll(users);
         channelRepository.save(channel);
     }
@@ -53,16 +59,10 @@ public class ChannelRepositoryUnitTest {
         assertEquals("channel name", channel.getName());
         assertEquals("channel desc", channel.getDescription());
 
-        assertEquals(users.get(1).getId(), channel.getId());
+        assertEquals(users.get(0).getId(), channel.getId());
 
         assertNotNull(channel.getCreationDate());
         assertNotNull(channel.getLastModifiedDate());
-    }
-
-    @Test
-    public void illegalCreate(){
-        Channel u = new Channel("channel name", "channel desc", null);
-        assertThrows(Exception.class, ()-> {channelRepository.save(u);});
     }
 
     @Test
@@ -94,7 +94,8 @@ public class ChannelRepositoryUnitTest {
 
     @Test
     public void searchByName(){
-        Channel a = new Channel("channel name 2", "channel desc 2", users.get(0));
+        Channel a = new Channel("channel name 2", "channel desc 2");
+        a.setUser(users.get(1));
         channelRepository.save(a);
 
         Set<Channel> results = channelRepository.findByName("channel name 2");
@@ -104,5 +105,25 @@ public class ChannelRepositoryUnitTest {
         }
 
     }
+
+    @Test
+    public void addDeleteContent(){
+        Content t = new Audio(channel, "music", "short audio track", "/tmp/music.mp3", new Date(), "0.5MB", "mp3", 0);
+
+        channel.addContent(t);
+        channelRepository.save(channel);
+        contentRepository.save(t);
+
+        assertEquals(1, channel.getContent().size());
+        assertEquals(1, contentRepository.findAll().size());
+
+        contentRepository.delete(t);
+        channel.getContent().clear();
+
+        channelRepository.saveAndFlush(channel);
+        assertEquals(0, channel.getContent().size());
+        assertEquals(0, contentRepository.findAll().size());
+    }
+
 
 }

@@ -48,7 +48,8 @@ public class ContentRepositoryUnitTest {
         user = new TanukiUser("name", "lastname", "mail", "username");
         userRepository.save(user);
 
-        channel = new Channel("channel name", "channel desc", user);
+        channel = new Channel("channel name", "channel desc");
+        channel.setUser(user);
         channelRepository.save(channel);
 
         contents = new LinkedList<>();

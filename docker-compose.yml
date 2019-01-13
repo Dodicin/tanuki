@@ -1,19 +1,19 @@
 version: '3'
 
 services:
-  tanuki-app:
+  app:
     build: .
     depends_on:
-    - tanuki-db
+    - db
     ports:
-    - '127.0.0.1:8080:8080'
+    - '127.0.0.1:1000:1000'
     environment:
       POSTGRES_HOST: 'db'
       POSTGRES_DB: 'tanuki'
       DATABASE_USER: 'postgres'
       DATABASE_PASSWORD: 'admin'
 
-  tanuki-db:
+  db:
     image: 'postgres'
     ports:
     - '127.0.0.1:5432:5432'
@@ -23,7 +23,10 @@ services:
       DATABASE_USER: 'postgres'
       DATABASE_PASSWORD: 'admin'
 
-  tanuki-db-admin:
+  db-admin:
     image: 'adminer'
+    depends_on:
+    - db
+    - app
     ports:
-      - 8079:8079
+      - 8080:8080

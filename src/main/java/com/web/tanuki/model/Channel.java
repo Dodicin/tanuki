@@ -23,15 +23,16 @@ public class Channel extends Auditable{
     @OneToMany(mappedBy="channel")
     private Set<Content> content;
 
-    public Channel(String name, String description, TanukiUser user) {
+    public Channel(String name, String description) {
         this.name = name;
         this.description = description;
-        this.user = user;
 
         this.content = new HashSet<>();
     }
 
-    public Channel() {}
+    public Channel() {
+        content = new HashSet<>();
+    }
 
     public Long getId() {
         return id;
@@ -67,9 +68,11 @@ public class Channel extends Auditable{
 
     public void addContent(Content content) {
         this.content.add(content);
+        content.setChannel(this);
     }
 
     public void deleteContent(Content content){
         this.content.remove(content);
+        content.setChannel(null);
     }
 }

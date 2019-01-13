@@ -2,6 +2,7 @@ package com.web.tanuki.repository;
 
 import com.web.tanuki.model.Board;
 import com.web.tanuki.model.Post;
+import com.web.tanuki.model.TanukiUser;
 import com.web.tanuki.model.Thread;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -9,10 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,13 +20,16 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ThreadRepositoryUnitTest {
 
     @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
     private ThreadRepository threadRepository;
 
     @Autowired
     private BoardRepository boardRepository;
+
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private TanukiUserRepository userRepository;
 
     private List<Thread> threads;
 
@@ -41,10 +43,15 @@ public class ThreadRepositoryUnitTest {
 
         threads = new LinkedList<>();
 
-        threads.add(new Thread(false, "aa", board));
-        threads.add(new Thread(true, "bb", board));
+        threads.add(new Thread(false, "aa"));
+        threads.add(new Thread(true, "bb"));
+
+        for(Thread t : threads){
+            board.addThread(t);
+        }
 
         threadRepository.saveAll(threads);
+        threadRepository.flush();
     }
 
     @Test
@@ -69,10 +76,7 @@ public class ThreadRepositoryUnitTest {
         b.setArchived(true);
         b.setTitle("cc");
 
-        b = threadRepository.save(b);
-
-        threadRepository.flush();
-        entityManager.clear();
+        threadRepository.saveAndFlush(b);
 
         Thread new_b = threadRepository.findById(b.getId()).get();
 
@@ -82,7 +86,7 @@ public class ThreadRepositoryUnitTest {
     }
 
     @Test
-    public void delete(){
+    public void deleteThread(){
         assertEquals(2, threadRepository.findAll().size());
         threadRepository.deleteById(threads.get(0).getId());
         assertEquals(1, threadRepository.findAll().size());
@@ -90,5 +94,32 @@ public class ThreadRepositoryUnitTest {
         threadRepository.deleteAll();
         assertEquals(0, threadRepository.findAll().size());
     }
+
+    @Test
+    public void addDeletePosts(){
+        TanukiUser u = new TanukiUser("a", "b", "c", "d");
+        userRepository.save(u);
+
+        Thread t = threads.get(0);
+        Post a = new Post("x", new GregorianCalendar(), new Date());
+        Post b = new Post("y", new GregorianCalendar(), new Date());
+        u.addPost(a);
+        u.addPost(b);
+        userRepository.save(u);
+        t.addPost(a);
+        t.addPost(b);
+        threadRepository.save(t);
+        postRepository.save(a);
+        postRepository.save(b);
+
+        assertEquals(2, postRepository.findAll().size());
+        assertEquals(2, t.getPosts().size());
+
+        t.getPosts().clear();
+        postRepository.deleteAllInBatch();
+        threadRepository.saveAndFlush(t);
+        assertEquals(0, t.getPosts().size());
+    }
+
 
 }

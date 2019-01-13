@@ -97,4 +97,12 @@ public class Content extends Auditable{
     public void addView(){
         views+=1;
     }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
 }

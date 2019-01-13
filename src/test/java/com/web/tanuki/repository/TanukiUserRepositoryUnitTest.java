@@ -83,8 +83,6 @@ public class TanukiUserRepositoryUnitTest {
 
         userRepository.deleteAll();
         assertEquals(0, userRepository.findAll().size());
-
-
     }
 
     @Test
@@ -99,5 +97,33 @@ public class TanukiUserRepositoryUnitTest {
         }
 
     }
+
+    @Test
+    void addRemoveFollower(){
+        TanukiUser user1 = users.get(0);
+        TanukiUser user2 = users.get(1);
+
+        // user2 follows user1
+        user2.addFollowing(user1);
+        assertEquals(1, user1.getFollowers().size());
+        assertTrue(user1.getFollowers().contains(user2));
+        assertEquals(1, user2.getFollowing().size());
+        assertTrue(user2.getFollowing().contains(user1));
+
+        // user1 follows user2
+        user1.addFollowing(user2);
+        assertEquals(1, user2.getFollowers().size());
+        assertTrue(user2.getFollowers().contains(user1));
+        assertEquals(1, user1.getFollowing().size());
+        assertTrue(user1.getFollowing().contains(user2));
+
+        // user2 unfollows user1
+        user2.removeFollowing(user1);
+        assertEquals(0, user1.getFollowers().size());
+        assertFalse(user1.getFollowers().contains(user2));
+        assertEquals(0, user2.getFollowing().size());
+        assertFalse(user2.getFollowing().contains(user1));
+    }
+
 
 }

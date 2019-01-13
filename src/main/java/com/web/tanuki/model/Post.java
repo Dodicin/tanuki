@@ -2,6 +2,7 @@ package com.web.tanuki.model;
 import javax.persistence.*;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -20,11 +21,11 @@ public class Post extends Auditable {
     private Date time;
 
     @ManyToOne
-    @JoinColumn(name="user_id", nullable=false)
+    @JoinColumn(name="user_id")
     private TanukiUser user;
 
     @ManyToOne
-    @JoinColumn(name="thread_id", nullable=false)
+    @JoinColumn(name="thread_id")
     private Thread thread;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -34,12 +35,14 @@ public class Post extends Auditable {
     @ManyToMany(mappedBy = "answersTo", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Post> answeredBy;
 
-    public Post(String text, Calendar date, Date time, TanukiUser user, Thread thread) {
+    public Post(String text, Calendar date, Date time) {
         this.text = text;
         this.date = date;
         this.time = time;
-        this.user = user;
-        this.thread = thread;
+
+        this.answersTo = new HashSet<>();
+        this.answeredBy = new HashSet<>();
+
     }
 
     public Post() {
@@ -77,17 +80,27 @@ public class Post extends Auditable {
         return user;
     }
 
+    public void setUser(TanukiUser user) {
+        this.user = user;
+    }
+
     public Thread getThread() {
         return thread;
+    }
+
+    public void setThread(Thread t) {
+        this.thread=t;
     }
 
     public Set<Post> getAnswersTo() {
         return answersTo;
     }
 
-    public void addAnswersTo(Post answersTo) {
-        this.answersTo.add(answersTo);
-        answersTo.addAnsweredBy(this);
+    public void addAnswersTo(Post referencedPost) {
+        if(referencedPost != null && referencedPost != this) {
+            this.answersTo.add(referencedPost);
+            referencedPost.addAnsweredBy(this);
+        }
     }
 
     public Set<Post> getAnsweredBy() {
@@ -97,4 +110,6 @@ public class Post extends Auditable {
     private void addAnsweredBy(Post answer) {
         this.answeredBy.add(answer);
     }
+
+
 }
