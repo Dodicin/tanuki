@@ -1,16 +1,7 @@
-## [Processo e Sviluppo del Software] - Assignment 3
+## Tanuki
 
 ## Author
 - **Nassim Habbash** - _808292_
-
-## Getting Started
-
-```
-$ git clone https://gitlab.com/Dodicin/tanuki
-$ cd tanuki
-```
-
-# Tanuki
 
 <center>
 <img src="docs/images/logo.jpg" width="100" />
@@ -26,19 +17,62 @@ Boards are essentially categories (*i.e. music, literature, etc*). Posts on boar
 <img src="docs/images/mock.png"  />
 </center>
 
-*Ugly mockup of the homepage*
+*Not-so-nice mockup of the homepage*
+
+## Usage
+
+```
+$ git clone https://gitlab.com/Dodicin/tanuki
+$ cd tanuki
+$ docker-compose up
+```
+
+The configuration provided in the file `docker-compse.yml` allows to deploy three containers, one for the app itself, one for postgres and one for adminer, a postgres administrating web-tool.
 
 # Overview
 
-The project itself aims to implement CRUD operations on the main entities that form the system: *Users, Channels, Content, Posts* and *Threads*.
+The project itself aims to implement CRUD operations on the main entities that form the system: *Users, Channels, Content, Boards, Posts* and *Threads*.
 
 # Architecture
 
-For the development of the system it has been chosen to use the following tools: Spring framework, JPA through Hibernate for persistency, MySQL as the DBMS and Maven for dependency management.
+For the development of the system it has been chosen to use the following tools: the Spring framework to provide flexibility and ease of use, the Hibernate ORM for JPA, Postgres as the DBMS and Maven for dependency management.
 
-# ER diagram
+# ER schema
+
+The following diagram shows the entities and relationships of the system.
+There are in total 5 entities, one being 4 actual entities engaged in an inheritance relationship. There are a total of 7 relationships, two of them being self-relationships on the user entity and post entity, which both have a many-to-many cardinality.
+
+Thus the assignment satisfies requirements **1** and **2** of the assignement.
 
 <center>
 <img src="docs/images/er.png"  />
 </center>
+
+# Database schema
+
+<center>
+</center>
+
+# Structure
+
+The core package that contains all the main classes is `src.main.java.com.web`.
+
+* The `model` package contains all the entities which compose the system:
+    * `TanukiUser` represents the user of the platform. It has a many-to-many self-relationship with itself (following/follower), which is handled with Lazy Load.
+    * `Channel` represents the place where the user can push content that will be then showcased on the platform. It has a one-to-one relationship with `TanukiUser` which is handled with Lazy Load and `@MapsId`. This means that a channel shares its primary key with its linked user, avoiding us some code and testing thanks to the simplicity of the association.
+    * `Content` is the parent entity of `Video`, `Audio` and `Image`. They represent the content that can be pushed on the platform. The inheritance relationship between the four entities has been handled with the Single Table pattern: all the content is effectively on the same table. This has been deemeed the correct choice because of the scarce difference between the attributes of the child entitiy. It is important to note, though, that the child entities are still handled separately on the level of business-logic. This is necessary to implement different solutions based the effective difference between the three media - for example, a `Strategy+Facade` Pattern to enable handling differently the views for each type of media, a video player, an audio player or a simple `<img>` tag.
+    * `Post` represents a post by a user on a board. Posts can either be answer to other posts inside threads, or start a new thread on a board themselves. The `Post` entity has a many-to-one relationship with `TanukiUser`. It has also a many-to-many self-relation with itself (answering post) which is handled with Lazy Load and another many-to-one relation with `Thread`.
+    * `Threads` represents a unit of discussion, and is formed by a chain of posts. Posts are made inside Threads. The `Thread` entity has a one-to-many relation with `Post`, and a many-to-one relation with `Board`.
+    * `Board` represents a container for threads. Different boards may have different themes - for example: cooking, gaming, etc. Threads are created inside Boards. The `Board` entity has a one-to-many relation with `Thread`,
+
+* The `repository` package contains all the repositories for managing persistance and data access of the objects. The interfaces have been implemented through Spring's `JpaRepository`, which defines CRUD operations on each Entity the repository points to. 
+
+Search by criteria operations have been implemented for most entities. Complex searches haven't been implemented, as they lie outside the scope of the project.
+
+The package `src.main.test.java.com.web.tanuki` contains different suits of tests.
+
+
+# Considerations
+
+* The execution of the tests has a significant overhead due to the creation of the database and loading of the environment. It is possible to reduce this overhead significantly by changing Spring's notation to load only the minimum components necessary, but as the study in-depth of Spring's capabilities was outside the scope of the project, this hasn't been done.
 
