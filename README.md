@@ -86,7 +86,7 @@ The package `src.main.test.java.com.web.tanuki` contains different suits of test
 
 * Inside the `repository` folder, all repository have been with **Junit** and **Spring** testing functionalities. 
 All the components have been unit tested against their CRUD and search operations. 
-The given tests enstablish the correctness of the Entity classes and their respective Repositories.
+The given tests enstablish the correctness of the entity classes, relation mappings and their respective repositories.
 
 The tests run on **Junit Jupiter** and **H2 in-memory database**, instead of Postgres, for faster test deployment. 
 
